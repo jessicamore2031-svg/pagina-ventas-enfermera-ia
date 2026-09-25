@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompts Prácticos para Enfermeras | Oferta Hotmart</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Importmap para React y Lucide -->
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.2.0",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+      "lucide-react": "https://esm.sh/lucide-react@0.344.0"
+    }
+  }
+  </script>
+  <!-- Babel Standalone para JSX en el navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased font-sans">
+  <div id="root" class="w-full h-auto"></div>
+
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useMemo } from 'react';
+    import ReactDOM from 'react-dom/client';
+    import { 
+      Check, 
+      Sparkles, 
+      ShieldCheck, 
+      ArrowRight, 
+      BookOpen, 
+      BrainCircuit, 
+      Clock, 
+      HeartPulse, 
+      CheckCircle2, 
+      Copy, 
+      ExternalLink, 
+      ChevronDown, 
+      DollarSign, 
+      AlertCircle, 
+      Zap, 
+      BadgePercent, 
+      Lock, 
+      HelpCircle, 
+      TrendingUp,
+      FileText,
+      Gift,
+      Timer,
+      Globe,
+      Compass,
+      Stethoscope,
+      Users,
+      X,
+      Award
+    } from 'lucide-react';
+
+    function App() {
+      // Estado del paquete seleccionado: 'combo', 'basico', 'pro'
+      const [selectedPlan, setSelectedPlan] = useState('combo');
+      // Enlace configurable de Hotmart (para que el usuario coloque su hotlink real)
+      const [hotmartBaseUrl, setHotmartBaseUrl] = useState('https://pay.hotmart.com/');
+      const [copiedPromptId, setCopiedPromptId] = useState(null);
+      const [activeFaq, setActiveFaq] = useState(null);
+      const [previewCategory, setPreviewCategory] = useState('alta');
+
+      // Selector de moneda: 'PEN' (Soles) o 'USD' (Dólares)
+      const [currency, setCurrency] = useState('PEN');
+      // Diagnóstico interactivo por área clínica
+      const [selectedArea, setSelectedArea] = useState('urgencias');
+      // Toast de prueba social
+      const [socialToast, setSocialToast] = useState(null);
+      const [isToastVisible, setIsToastVisible] = useState(true);
+
+      // Temporizador de cuenta regresiva (anclado a 24 horas continuas)
+      const [timeLeft, setTimeLeft] = useState({ hours: 14, minutes: 32, seconds: 45 });
+
+      useEffect(() => {
+        const timer = setInterval(() => {
+          setTimeLeft(prev => {
+            if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+            if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+            if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
+            return { hours: 23, minutes: 59, seconds: 59 };
+          });
+        }, 1000);
+        return () => clearInterval(timer);
+      }, []);
+
+      const recentSales = useMemo(() => [
+        { name: 'Lic. Carmen M.', city: 'Lima, Perú', plan: 'Mega Pack Combo (Básico + Pro)', time: 'hace 4 min' },
+        { name: 'Lic. Rocío V.', city: 'Arequipa, Perú', plan: 'Mega Pack Combo (Básico + Pro)', time: 'hace 9 min' },
+        { name: 'Lic. Diana S.', city: 'Trujillo, Perú', plan: 'Kit Básico 65 Prompts', time: 'hace 18 min' },
+        { name: 'Lic. Andrea P.', city: 'Cusco, Perú', plan: 'Mega Pack Combo (Básico + Pro)', time: 'hace 27 min' },
+        { name: 'Lic. Jorge H.', city: 'Chiclayo, Perú', plan: 'Kit Pro Creadora IA', time: 'hace 35 min' },
+        { name: 'Lic. Mariana T.', city: 'Santiago, Chile', plan: 'Mega Pack Combo (Básico + Pro)', time: 'hace 42 min' }
+      ], []);
+
+      useEffect(() => {
+        let index = 0;
+        setSocialToast(recentSales[0]);
+        const interval = setInterval(() => {
+          index = (index + 1) % recentSales.length;
+          setSocialToast(recentSales[index]);
+          setIsToastVisible(true);
+        }, 11000);
+        return () => clearInterval(interval);
+      }, [recentSales]);
+
+      // Persistencia en LocalStorage
+      useEffect(() => {
+        const savedPlan = localStorage.getItem('enfermera_selected_plan');
+        if (savedPlan) setSelectedPlan(savedPlan);
+        const savedUrl = localStorage.getItem('enfermera_hotmart_url');
+        if (savedUrl) setHotmartBaseUrl(savedUrl);
+        const savedCurrency = localStorage.getItem('enfermera_currency');
+        if (savedCurrency) setCurrency(savedCurrency);
+      }, []);
+
+      const handlePlanChange = (planId) => {
+        setSelectedPlan(planId);
+        localStorage.setItem('enfermera_selected_plan', planId);
+      };
+
+      const handleCurrencyChange = (newCur) => {
+        setCurrency(newCur);
+        localStorage.setItem('enfermera_currency', newCur);
+      };
+
+      // Datos de precios según moneda (Soles PEN vs Dólares USD)
+      const pricingData = {
+        PEN: {
+          symbol: 'S/',
+          basico: { regular: 39, actual: 29, ahorro: 10 },
+          pro: { regular: 85, actual: 60, ahorro: 25 },
+          combo: { regular: 124, actual: 80.10, ahorro: 43.90 } // 29 + 60 = 89 - 10% = 80.10
+        },
+        USD: {
+          symbol: '$',
+          basico: { regular: 12, actual: 8.50, ahorro: 3.50 },
+          pro: { regular: 25, actual: 17.50, ahorro: 7.50 },
+          combo: { regular: 37, actual: 23.40, ahorro: 13.60 } // 8.50 + 17.50 = 26 - 10% = 23.40
+        }
+      };
+
+      const curPrices = pricingData[currency];
+
+      const pricing = {
+        basico: {
+          id: 'basico',
+          nombre: 'Kit Básico: 65 Prompts Clínicos',
+          tag: 'Esencial para la Asistencia Hospitalaria',
+          precioRegular: curPrices.basico.regular,
+          precioActual: curPrices.basico.actual,
+          ahorro: curPrices.basico.ahorro,
+          desc: 'Para optimizar tus turnos de guardia, automatizar notas SOAPIE, formular planes PAE/NANDA y educar pacientes con seguridad.',
+          bullets: [
+            'Acceso a la Biblioteca Web Interactiva con buscador en vivo y copiado en 1 clic',
+            'Método CUIDA incluido (Contexto, Uso anónimo, Indica formato, Depura, Aplica)',
+            'Prompts para Notas de Enfermería SOAPIE y entrega de turno rápida',
+            'Taxonomía clínica completa: Diagnósticos NANDA, NIC y NOC justificados',
+            'Plantillas para Proceso de Atención de Enfermería (PAE) y priorización',
+            'Herramientas para docencia, casos clínicos pedagógicos y gestión de turnos',
+            'Protocolo estricto de anonimización de historias clínicas y datos sensibles'
+          ],
+          checkoutUrl: 'https://pay.hotmart.com/T107745838N'
+        },
+        pro: {
+          id: 'pro',
+          nombre: 'Kit Pro: 15 Sistemas Creadora IA',
+          tag: 'Monetiza tu Experiencia Clínica',
+          precioRegular: curPrices.pro.regular,
+          precioActual: curPrices.pro.actual,
+          ahorro: curPrices.pro.ahorro,
+          desc: 'Para transformar tus años de experiencia hospitalaria en ebooks, talleres, cursos y miniapps educativas con IA.',
+          bullets: [
+            'Acceso a la Biblioteca Web Interactiva de los 15 Sistemas guiados de creación',
+            'Fase 1: Descubrimiento (Mapa de experiencia y entrevista sin vender antes de tiempo)',
+            'Fase 2: Validación (Propuesta de valor verificable, prototipos y control de calidad)',
+            'Fase 3: Contenido (Arquitectura de ebooks prácticos, cursos por resultados y microlecciones)',
+            'Fase 4: Experiencia (Diseño de talleres con estaciones y blueprints de miniapps)',
+            'Fase 5: Lanzamiento (Estrategia de oferta transparente y piloto de venta rápida)',
+            'Enfoque ético: productos con base en evidencia real y cero promesas falsas'
+          ],
+          checkoutUrl: 'https://pay.hotmart.com/N107755309Q'
+        },
+        combo: {
+          id: 'combo',
+          nombre: 'Mega Pack: Básico + Creadora Pro',
+          tag: '⭐ Opción Más Popular (10% OFF Adicional)',
+          precioRegular: curPrices.combo.regular,
+          precioActual: curPrices.combo.actual,
+          ahorro: curPrices.combo.ahorro,
+          desc: 'El ecosistema completo: domina la asistencia clínica diaria con el Método CUIDA y crea tu primer activo digital educativo.',
+          bullets: [
+            'TODO el Kit Básico: 65 Prompts Clínicos (SOAPIE, PAE, NANDA-NIC-NOC, Turnos)',
+            'TODO el Kit Pro: 15 Sistemas de Creación en 5 Fases (Ebooks, Cursos, Miniapps)',
+            'Total: 80 Prompts y Estructuras interactivas listas para usar en Hotmart Club',
+            'Acceso vitalicio a las 2 Bibliotecas Web Interactivas con buscador inteligente',
+            'Descuento del 10% adicional aplicado directamente en el checkout',
+            'Garantía incondicional de 7 días respaldada al 100% por Hotmart'
+          ],
+          bonuses: [
+            {
+              title: 'BONO #1: Guía de Bolsillo PDF "Protocolo de Anonimización de Pacientes HIPAA/RGPD"',
+              value: currency === 'PEN' ? 'S/ 25.00' : '$ 7.00'
+            },
+            {
+              title: 'BONO #2: Plantilla Editable en Canva "Folleto de Alta Visual para Pacientes en 3 Clics"',
+              value: currency === 'PEN' ? 'S/ 30.00' : '$ 9.00'
+            }
+          ],
+          checkoutUrl: 'https://pay.hotmart.com/S107760875L?off=9xmwt78z'
+        }
+      };
+
+      // Áreas clínicas y diagnósticos
+      const clinicalAreas = {
+        urgencias: {
+          id: 'urgencias',
+          nombre: 'Urgencias / UCI / Cuidados Críticos',
+          icono: '⚡',
+          kitRecomendado: 'combo',
+          mensaje: 'Tu principal reto es la velocidad de respuesta y el riesgo de dosificación bajo presión. Necesitas el blindaje anti-alucinaciones y la agilidad de triage asistido.',
+          promptsClave: [
+            'Prompt #08: Algoritmo de verificación rápida de compatibilidad de mezclas endovenosas.',
+            'Prompt #21: Resumen express de entrega de turno clínico crítico (formato SBAR automatizado).'
+          ]
+        },
+        hospitalizacion: {
+          id: 'hospitalizacion',
+          nombre: 'Hospitalización / Atención Primaria',
+          icono: '🏥',
+          kitRecomendado: 'basico',
+          mensaje: 'Tu tiempo se drena en redacción de notas de evolución, altas y explicar indicaciones repetitivas a familiares con poca comprensión médica.',
+          promptsClave: [
+            'Prompt #12: Generador de folletos de alta sin tecnicismos en 3 minutos.',
+            'Prompt #34: Formulación ágil de Planes de Cuidados de Enfermería (PAE / NANDA / NIC / NOC).'
+          ]
+        },
+        docencia: {
+          id: 'docencia',
+          nombre: 'Docencia / Investigación / Pregrado',
+          icono: '📚',
+          kitRecomendado: 'combo',
+          mensaje: 'Requieres dinamizar clases teóricas, generar simulaciones de casos clínicos y preparar rúbricas de evaluación sin desgastarte madrugadas enteras.',
+          promptsClave: [
+            'Prompt #45: Creador de casos clínicos pedagógicos con errores sutiles para debate en clase.',
+            'Sistema #03: Matriz de diseño instruccional para talleres clínicos de 60 minutos.'
+          ]
+        },
+        emprendimiento: {
+          id: 'emprendimiento',
+          nombre: 'Emprendimiento / Creadora Digital',
+          icono: '💡',
+          kitRecomendado: 'combo',
+          mensaje: 'Tienes años de experiencia en una especialidad y quieres dejar de cambiar tiempo por dinero vendiendo guías, protocolos o talleres virtuales.',
+          promptsClave: [
+            'Sistema #04: Arquitectura de minicursos clínicos vendibles en Hotmart.',
+            'Sistema #09: Estructurador de guías de bolsillo descargables en PDF listas para monetizar.'
+          ]
+        }
+      };
+
+      const scrollToOffers = (targetPlan) => {
+        handlePlanChange(targetPlan);
+        const element = document.getElementById('ofertas');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      // Muestras interactivas de Prompts incluidos (Efecto Wow)
+      const samplePrompts = {
+        alta: {
+          titulo: 'Folleto de Alta sin Jerga (Health Literacy)',
+          contexto: 'Kit Básico #12: Para pacientes que reciben alta con medicación compleja.',
+          promptText: `Actúa como enfermera educadora especialista en alfabetización en salud. Convierte las siguientes indicaciones clínicas para un paciente con [DIAGNÓSTICO: Ej. Insuficiencia Cardíaca Leve] y tratamiento de [FÁRMACOS: Ej. Furosemida y Enalapril] en un folleto de alta en lenguaje cercano, empático y libre de tecnicismos.
+Estructura la respuesta exactamente en 3 bloques visuales:
+1. "Lo que debes hacer cada mañana" (máximo 3 acciones con horarios sugeridos).
+2. "Síntomas normales y esperados" (para evitar llamadas de pánico).
+3. "SEMAFORO ROJO: Cuándo ir a urgencias de inmediato" (3 signos de alarma claros).
+Mantén un tono comprensivo pero firme con la seguridad del paciente.`,
+          salidaClave: 'Genera un documento estructurado de lectura ágil en 3 minutos.'
+        },
+        pae: {
+          titulo: 'Guía Rápida de Plan PAE / NANDA',
+          contexto: 'Kit Básico #34: Soporte pedagógico y estructuración asistencial.',
+          promptText: `Actúa como enfermera docente clínica. Dado el siguiente caso clínico desidentificado: [Mujer de 68 años con EPOC descompensada, saturación 88% aire ambiente, disnea de medianos esfuerzos y ansiedad marcada].
+Sugerir 2 diagnósticos NANDA prioritarios, 2 intervenciones NIC con fundamentación fisiopatológica breve y 2 criterios de resultado NOC medibles.
+DIRECTIVA CLÍNICA ANTI-ALUCINACIÓN: Si algún dato es insuficiente para confirmar el diagnóstico, especifica qué prueba diagnóstica o signo vital de enfermería debes verificar primero en la valoración física.`,
+          salidaClave: 'Diseño riguroso que refuerza el razonamiento clínico del profesional.'
+        },
+        minicurso: {
+          titulo: 'Arquitectura Express de Minicurso Clínico',
+          contexto: 'Kit Pro #04: De tu experiencia a un producto educativo comercializable.',
+          promptText: `Actúa como Diseñadora Instruccional experta en capacitación sanitaria. Quiero estructurar un minicurso digital de 45 minutos titulado: "[TEMA: Ej. Manejo Seguro de Accesos Venosos Periféricos en Pediatría]".
+Crea una estructura de 4 módulos siguiendo la metodología "Impacto Clínico":
+- Módulo 1: El error fatal que comete el 80% del personal y cómo evitarlo.
+- Módulo 2: Algoritmo de decisión rápida paso a paso.
+- Módulo 3: Caso de estudio real resuelto en tiempo real.
+- Módulo 4: Checklist de bolsillo descargable que el alumno guardará en su móvil.
+Para cada módulo, proporciona el título comercial atractivo y el objetivo práctico de aprendizaje.`,
+          salidaClave: 'Transforma cualquier destreza en un minicurso listo para vender.'
+        }
+      };
+
+      const copyToClipboard = (text, id) => {
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-999999px';
+          textArea.style.top = '-999999px';
+          textArea.setAttribute('readonly', '');
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          setCopiedPromptId(id);
+          setTimeout(() => setCopiedPromptId(null), 2500);
+        } catch (err) {
+          console.warn('Fallback copy error:', err);
+        }
+      };
+
+      const faqs = [
+        {
+          q: '¿Cómo accedo a los prompts tras el pago?',
+          a: 'El acceso es automático e inmediato. Una vez procesado el pago en Hotmart (con Yape, Plin, tarjeta o PagoEfectivo), recibirás un correo con tus credenciales para ingresar a la plataforma y descargar la biblioteca completa de prompts y guías.'
+        },
+        {
+          q: '¿Por qué comprar estos prompts en lugar de usar ChatGPT gratis?',
+          a: 'Los prompts genéricos de internet generan alucinaciones médicas, dosificaciones inventadas o lenguaje robótico inutilizable. Nuestros prompts cuentan con ingeniería clínica: incluyen protocolos anti-alucinaciones, delimitan la responsabilidad profesional, anonimizan datos sensibles y están diseñados según el criterio humano de la enfermería.'
+        },
+        {
+          q: '¿Qué formas de pago en Soles (S/) acepta Hotmart?',
+          a: 'Hotmart Perú admite pagos locales súper fáciles: Yape, Plin, tarjetas de débito/crédito (BCP, BBVA, Interbank, etc.) y código PagoEfectivo para pagar en agentes o banca por internet.'
+        },
+        {
+          q: '¿Necesito pagar la versión de pago de ChatGPT (Plus)?',
+          a: 'No. El 100% de los 65 prompts clínicos y los 15 sistemas de creación funcionan a la perfección en la versión gratuita de ChatGPT (GPT-4o mini), Claude, Gemini o Copilot.'
+        },
+        {
+          q: '¿Cómo funciona la Garantía de 7 Días?',
+          a: 'Tienes 7 días enteros para revisar el material, probar los prompts en tus turnos o en tu proyecto docente. Si sientes que no te ahorran tiempo o no tienen el rigor esperado, solicitas la devolución con un clic dentro de Hotmart y se te reintegra el 100% de tu dinero sin preguntas.'
+        }
+      ];
+
+      return (
+        <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col items-center">
+          
+          {/* BARRA SUPERIOR DE LANZAMIENTO CON TEMPORIZADOR Y SELECTOR DE MONEDA */}
+          <div className="w-full bg-slate-900 text-white text-xs sm:text-sm py-2.5 px-4 shadow-md sticky top-0 z-40 border-b border-slate-800">
+            <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+              
+              {/* Alerta de urgencia con cuenta regresiva */}
+              <div className="flex items-center gap-2">
+                <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                <span className="font-semibold text-rose-300 flex items-center gap-1.5">
+                  <Timer className="w-4 h-4 text-amber-400" />
+                  <span>PRECIO DE LANZAMIENTO TERMINA EN:</span>
+                </span>
+                <div className="flex items-center gap-1 font-mono font-black text-amber-300 bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700 text-xs">
+                  <span>{String(timeLeft.hours).padStart(2, '0')}h</span>:
+                  <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>:
+                  <span>{String(timeLeft.seconds).padStart(2, '0')}s</span>
+                </div>
+              </div>
+
+              {/* Selector de moneda PEN / USD */}
+              <div className="flex items-center gap-1.5 bg-slate-800/90 p-1 rounded-lg border border-slate-700">
+                <Globe className="w-3.5 h-3.5 text-slate-400 ml-1" />
+                <span className="text-[11px] text-slate-300 font-medium">Moneda:</span>
+                <button
+                  onClick={() => handleCurrencyChange('PEN')}
+                  className={`px-2 py-0.5 rounded text-xs font-bold transition-colors ${
+                    currency === 'PEN'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  S/ (PEN)
+                </button>
+                <button
+                  onClick={() => handleCurrencyChange('USD')}
+                  className={`px-2 py-0.5 rounded text-xs font-bold transition-colors ${
+                    currency === 'USD'
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  $ (USD)
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          {/* SECCIÓN MÉTODO CUIDA - EL BLINDAJE ÉTICO Y CLÍNICO */}
+          <section className="w-full bg-white py-12 sm:py-16 border-y border-slate-200 px-4 flex justify-center">
+            <div className="w-full max-w-4xl">
+              <div className="text-center mb-10">
+                <span className="text-emerald-700 font-bold text-xs sm:text-sm tracking-wider uppercase bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                  Nuestra Regla de Oro
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">
+                  Aprende a usar la IA con el <span className="text-indigo-600">Método CUIDA</span>
+                </h2>
+                <p className="text-slate-600 text-sm max-w-2xl mx-auto mt-2">
+                  "La IA es un copiloto técnico; tu criterio humano es el filtro supremo". Nunca compartimos nombres ni datos sensibles de pacientes.
+                </p>
+              </div>
+
+              {/* Grid 5 Pasos del Método CUIDA */}
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center mb-2 shadow-sm">
+                    C
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-sm">Contexto</h4>
+                  <p className="text-xs text-slate-500 mt-1">Explica claramente el escenario y la finalidad clínica sin rodeos.</p>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center mb-2 shadow-sm">
+                    U
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-sm">Uso Anónimo</h4>
+                  <p className="text-xs text-slate-500 mt-1">Elimina nombres, historias clínicas o datos que identifiquen al paciente.</p>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center mb-2 shadow-sm">
+                    I
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-sm">Indica Formato</h4>
+                  <p className="text-xs text-slate-500 mt-1">Señala la estructura exacta: tabla, SOAPIE, viñetas o checklist.</p>
+                </div>
+
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white font-black text-lg flex items-center justify-center mb-2 shadow-sm">
+                    D
+                  </div>
+                  <h4 className="font-extrabold text-slate-900 text-sm">Depura</h4>
+                  <p className="text-xs text-slate-500 mt-1">Verifica exactitud clínica, coherencia y descarta cualquier alucinación.</p>
+                </div>
+
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-center flex flex-col items-center">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white font-black text-lg flex items-center justify-center mb-2 shadow-sm">
+                    A
+                  </div>
+                  <h4 className="font-extrabold text-emerald-900 text-sm">Aplica</h4>
+                  <p className="text-xs text-emerald-700 mt-1">La decisión final y el cuidado siempre corresponden a tu criterio profesional.</p>
+                </div>
+              </div>
+
+              {/* Banner de la Biblioteca Interactiva */}
+              <div className="mt-8 p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-800/40">
+                <div className="flex items-center gap-3.5">
+                  <div className="p-3 bg-indigo-600/30 border border-indigo-400/30 rounded-xl text-indigo-300">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="font-bold text-sm sm:text-base text-white">
+                      Incluye acceso a las 2 Bibliotecas Web Interactivas
+                    </h3>
+                    <p className="text-xs text-indigo-200 mt-0.5">
+                      Buscador en tiempo real por palabra clave, filtros por especialidad y botón "Copiar prompt" listo para ChatGPT, Claude o Gemini.
+                    </p>
+                  </div>
+                </div>
+                <a
+                  href="#ofertas"
+                  className="shrink-0 px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs rounded-xl shadow transition-all hover:scale-105"
+                >
+                  Ver Bibliotecas
+                </a>
+              </div>
+            </div>
+          </section>
+
+          {/* DESGLOSE DETALLADO DE AMBAS BIBLIOTECAS (COMO EN EL ÁREA DE MIEMBROS) */}
+          <section className="w-full max-w-5xl px-4 py-14">
+            <div className="text-center mb-10">
+              <span className="text-indigo-600 font-semibold text-xs sm:text-sm tracking-wider uppercase">Contenido Real del Curso</span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">
+                Conoce lo que encontrarás dentro de tu plataforma
+              </h2>
+              <p className="text-slate-600 text-sm max-w-2xl mx-auto mt-2">
+                Estructurado en microclases ágiles con videos directos al grano y acceso a las aplicaciones interactivas para copiar y pegar.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Card Kit Básico: 10 Categorías */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">
+                      65 Prompts Clínicos
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium">10 Categorías</span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-slate-900 mt-3">
+                    Biblioteca Asistencial y Docente
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Diseñada para el turno real: copia la instrucción, reemplaza los corchetes y obtén el borrador médico en segundos.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-2 mt-4 text-xs text-slate-700">
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Tiempo y organización</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Cursos y docencia</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Estudio y tareas</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Investigación en salud</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Educación al paciente</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Seguridad en práctica</span>
+                    </div>
+                    <div className="p-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      <span>Estudios de casos</span>
+                    </div>
+                    <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-1.5 font-bold text-emerald-900">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      <span>Notas SOAPIE</span>
+                    </div>
+                    <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-1.5 font-bold text-emerald-900">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      <span>NANDA, NIC y NOC</span>
+                    </div>
+                    <div className="p-2 bg-emerald-50 rounded-lg border border-emerald-100 flex items-center gap-1.5 font-bold text-emerald-900">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                      <span>Proceso PAE</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium">Incluido en: Kit Básico y Combo</span>
+                  <span className="font-extrabold text-indigo-600">{curPrices.symbol} {pricing.basico.precioActual.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                </div>
+              </div>
+
+              {/* Card Kit Pro: 15 Sistemas en 5 Fases */}
+              <div className="bg-white rounded-2xl border border-purple-200 p-6 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-purple-100">
+                    <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
+                      15 Sistemas Creadora Pro
+                    </span>
+                    <span className="text-xs text-purple-500 font-medium">5 Etapas de Creación</span>
+                  </div>
+                  <h3 className="text-lg font-extrabold text-slate-900 mt-3">
+                    De la Guardia al Activo Digital
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Aprende a empaquetar tu conocimiento clínico en recursos educativos listos para comercializar o enseñar.
+                  </p>
+
+                  <div className="space-y-2 mt-4 text-xs text-slate-700">
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <strong className="text-purple-700">1. Descubrimiento:</strong> Mapa de experiencia personal y entrevista de necesidades sin vender antes de tiempo.
+                    </div>
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <strong className="text-purple-700">2. Validación:</strong> Propuesta de valor verificable, prototipos con usuarios reales y control de calidad clínica.
+                    </div>
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <strong className="text-purple-700">3. Contenido:</strong> Arquitectura de ebooks prácticos, cursos por resultados, guion de clase y microlecciones.
+                    </div>
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <strong className="text-purple-700">4. Experiencia:</strong> Diseño de talleres presenciales con estaciones y blueprint de miniapps educativas.
+                    </div>
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                      <strong className="text-purple-700">5. Lanzamiento:</strong> Oferta y precio sin promesas exageradas y plan de lanzamiento piloto para aprender vendiendo.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-purple-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium">Incluido en: Kit Pro y Combo</span>
+                  <span className="font-extrabold text-purple-700">{curPrices.symbol} {pricing.pro.precioActual.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* VISTA PREVIA INTERACTIVA: PROBADOR DE PROMPTS */}
+          <section className="w-full max-w-4xl px-4 py-14">
+            <div className="text-center mb-8">
+              <span className="text-indigo-600 font-semibold text-xs sm:text-sm tracking-wider uppercase">Demostración en Vivo</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">Prueba el rigor de los prompts antes de comprar</h2>
+              <p className="text-slate-500 text-sm max-w-xl mx-auto mt-2">
+                Haz clic en cada categoría para ver la estructura exacta con la que trabajarás. Puedes copiarlo y probarlo en tu IA favorita ahora mismo.
+              </p>
+            </div>
+
+            {/* Tabs selector */}
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              <button
+                onClick={() => setPreviewCategory('alta')}
+                className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  previewCategory === 'alta'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Folleto de Alta al Paciente
+              </button>
+              <button
+                onClick={() => setPreviewCategory('pae')}
+                className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  previewCategory === 'pae'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Plan PAE / NANDA Rápido
+              </button>
+              <button
+                onClick={() => setPreviewCategory('minicurso')}
+                className={`px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all duration-200 ${
+                  previewCategory === 'minicurso'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                Estructura de Minicurso Digital
+              </button>
+            </div>
+
+            {/* Prompt Box */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm relative">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-indigo-500" />
+                    {samplePrompts[previewCategory].titulo}
+                  </h3>
+                  <p className="text-xs text-slate-500">{samplePrompts[previewCategory].contexto}</p>
+                </div>
+                <button
+                  onClick={() => copyToClipboard(samplePrompts[previewCategory].promptText, previewCategory)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-colors active:scale-95"
+                >
+                  {copiedPromptId === previewCategory ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">¡Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar Prompt</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Contenido del prompt */}
+              <div className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto whitespace-pre-wrap select-all">
+                {samplePrompts[previewCategory].promptText}
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+                <span className="flex items-center gap-1 text-emerald-600 font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> {samplePrompts[previewCategory].salidaClave}
+                </span>
+                <span>Listo para pegar en ChatGPT</span>
+              </div>
+            </div>
+          </section>
+
+          {/* SECCIÓN PRINCIPAL DE PRECIOS Y OFERTAS */}
+          <section id="ofertas" className="w-full bg-slate-100 py-16 px-4 flex justify-center scroll-mt-6">
+            <div className="w-full max-w-5xl">
+              
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold mb-2">
+                  <BadgePercent className="w-4 h-4" /> Descuentos por Tiempo Limitado
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+                  Elige tu Kit o llévate el Combo Completo
+                </h2>
+                <p className="text-slate-600 text-sm sm:text-base max-w-xl mx-auto mt-2">
+                  Precios especiales en {currency === 'PEN' ? 'Soles peruanos (S/)' : 'Dólares americanos ($)'} con entrega inmediata a tu correo electrónico mediante Hotmart.
+                </p>
+              </div>
+
+              {/* TRES TARJETAS DE PLAN */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+                
+                {/* 1. KIT BÁSICO */}
+                <div 
+                  onClick={() => handlePlanChange('basico')}
+                  className={`bg-white rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between p-6 ${
+                    selectedPlan === 'basico' 
+                      ? 'border-indigo-600 ring-2 ring-indigo-500/20 shadow-md scale-[1.01]' 
+                      : 'border-slate-200 hover:border-slate-300 shadow-sm'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
+                        {pricing.basico.tag}
+                      </span>
+                      {selectedPlan === 'basico' && (
+                        <span className="flex items-center text-xs font-semibold text-indigo-600 gap-1">
+                          <Check className="w-3.5 h-3.5" /> Seleccionado
+                        </span>
+                      )}
+                    </div>
+                    
+                    <h3 className="text-xl font-bold text-slate-900 mt-4">{pricing.basico.nombre}</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{pricing.basico.desc}</p>
+                    
+                    <div className="mt-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900">{curPrices.symbol} {pricing.basico.precioActual.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                        <span className="text-sm line-through text-slate-400 font-medium">{curPrices.symbol} {pricing.basico.precioRegular.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                      </div>
+                      <span className="inline-block text-xs font-semibold text-emerald-600 mt-1">
+                        Ahorras {curPrices.symbol} {pricing.basico.ahorro.toFixed(currency === 'PEN' ? 0 : 2)} (Precio de Lanzamiento)
+                      </span>
+                    </div>
+
+                    <div className="mt-5 space-y-2.5 text-xs text-slate-600">
+                      {pricing.basico.bullets.map((b, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4">
+                    <a
+                      href={pricing.basico.checkoutUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlanChange('basico');
+                      }}
+                      className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                        selectedPlan === 'basico'
+                          ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      <span>Comprar Kit Básico ({curPrices.symbol} {pricing.basico.precioActual.toFixed(currency === 'PEN' ? 0 : 2)})</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* 2. COMBO RECOMENDADO (CENTRO - DESTACADO CON BONOS) */}
+                <div 
+                  onClick={() => handlePlanChange('combo')}
+                  className={`bg-white rounded-2xl border-2 transition-all duration-200 cursor-pointer flex flex-col justify-between p-6 relative ${
+                    selectedPlan === 'combo' 
+                      ? 'border-emerald-500 ring-4 ring-emerald-500/10 shadow-xl md:-translate-y-2' 
+                      : 'border-emerald-400/60 hover:border-emerald-500 shadow-md'
+                  }`}
+                >
+                  {/* Badge Destacado */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-[11px] font-extrabold uppercase px-3 py-1 rounded-full shadow-sm flex items-center gap-1 whitespace-nowrap">
+                    <Zap className="w-3 h-3 fill-current" /> 10% Descuento Adicional + 2 Bonos
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md">
+                        {pricing.combo.tag}
+                      </span>
+                    </div>
+
+                    <h3 className="text-xl font-black text-slate-900 mt-4">{pricing.combo.nombre}</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{pricing.combo.desc}</p>
+
+                    <div className="mt-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl font-black text-emerald-600">{curPrices.symbol} {pricing.combo.precioActual.toFixed(2)}</span>
+                        <span className="text-sm line-through text-slate-400 font-medium">{curPrices.symbol} {pricing.combo.precioRegular.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                      </div>
+                      <span className="inline-block text-xs font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded mt-1.5">
+                        ¡Ahorras {curPrices.symbol} {pricing.combo.ahorro.toFixed(2)} comprando ambos!
+                      </span>
+                    </div>
+
+                    <div className="mt-5 space-y-2.5 text-xs text-slate-700">
+                      {pricing.combo.bullets.map((b, i) => (
+                        <div key={i} className="flex items-start gap-2 font-medium">
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* SECCIÓN DE BONOS EXCLUSIVOS GRATIS */}
+                    <div className="mt-5 p-3.5 bg-gradient-to-br from-amber-50 to-emerald-50 rounded-xl border border-amber-200/80">
+                      <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-900 mb-2">
+                        <Gift className="w-4 h-4 text-amber-600" />
+                        <span>2 BONOS EXCLUSIVOS INCLUIDOS HOY:</span>
+                      </div>
+                      <div className="space-y-2 text-[11px] text-slate-700">
+                        {pricing.combo.bonuses.map((bonus, idx) => (
+                          <div key={idx} className="flex items-start justify-between gap-1.5 bg-white/80 p-2 rounded-lg border border-amber-100">
+                            <span className="font-semibold text-slate-800 leading-tight">🎁 {bonus.title}</span>
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded whitespace-nowrap">
+                              GRATIS
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4">
+                    <a
+                      href={pricing.combo.checkoutUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlanChange('combo');
+                      }}
+                      className="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm text-white bg-emerald-600 hover:bg-emerald-500 shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95"
+                    >
+                      <span>Obtener Combo con 10% OFF + Bonos</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+                {/* 3. KIT PRO CREADORA */}
+                <div 
+                  onClick={() => handlePlanChange('pro')}
+                  className={`bg-white rounded-2xl border transition-all duration-200 cursor-pointer flex flex-col justify-between p-6 ${
+                    selectedPlan === 'pro' 
+                      ? 'border-indigo-600 ring-2 ring-indigo-500/20 shadow-md scale-[1.01]' 
+                      : 'border-slate-200 hover:border-slate-300 shadow-sm'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-wider text-purple-700 bg-purple-50 px-2.5 py-1 rounded-md">
+                        {pricing.pro.tag}
+                      </span>
+                      {selectedPlan === 'pro' && (
+                        <span className="flex items-center text-xs font-semibold text-indigo-600 gap-1">
+                          <Check className="w-3.5 h-3.5" /> Seleccionado
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl font-bold text-slate-900 mt-4">{pricing.pro.nombre}</h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{pricing.pro.desc}</p>
+
+                    <div className="mt-5 pb-5 border-b border-slate-100">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-3xl font-black text-slate-900">{curPrices.symbol} {pricing.pro.precioActual.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                        <span className="text-sm line-through text-slate-400 font-medium">{curPrices.symbol} {pricing.pro.precioRegular.toFixed(currency === 'PEN' ? 0 : 2)}</span>
+                      </div>
+                      <span className="inline-block text-xs font-semibold text-purple-600 mt-1">
+                        Ahorras {curPrices.symbol} {pricing.pro.ahorro.toFixed(currency === 'PEN' ? 0 : 2)} en preventa
+                      </span>
+                    </div>
+
+                    <div className="mt-5 space-y-2.5 text-xs text-slate-600">
+                      {pricing.pro.bullets.map((b, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4">
+                    <a
+                      href={pricing.pro.checkoutUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlanChange('pro');
+                      }}
+                      className={`w-full py-3 px-4 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+                        selectedPlan === 'pro'
+                          ? 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      <span>Comprar Kit Pro ({curPrices.symbol} {pricing.pro.precioActual.toFixed(currency === 'PEN' ? 0 : 2)})</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* CAJA DE FINALIZACIÓN DE COMPRA HOTMART */}
+              <div className="mt-10 bg-white border border-indigo-200 rounded-2xl p-6 sm:p-8 shadow-sm text-center flex flex-col items-center">
+                <div className="flex items-center gap-2 text-indigo-700 font-bold text-sm mb-1">
+                  <ShieldCheck className="w-5 h-5 text-indigo-600" />
+                  <span>Estás a un paso de comenzar tu transformación con IA</span>
+                </div>
+
+                <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">
+                  Total a pagar: <span className="text-emerald-600">{curPrices.symbol} {pricing[selectedPlan].precioActual.toFixed(2)}</span>
+                </div>
+
+                <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                  Paquete seleccionado: <strong>{pricing[selectedPlan].nombre}</strong>
+                </p>
+
+                {/* BOTÓN PRINCIPAL HOTMART */}
+                <a
+                  href={pricing[selectedPlan].checkoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 w-full sm:w-auto px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-base sm:text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95"
+                >
+                  <Lock className="w-5 h-5" />
+                  <span>Comprar Ahora por Hotmart ({curPrices.symbol} {pricing[selectedPlan].precioActual.toFixed(2)})</span>
+                  <ExternalLink className="w-4 h-4 opacity-75" />
+                </a>
+
+                {/* Sellos de confianza */}
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
+                  <span className="flex items-center gap-1 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" /> {currency === 'PEN' ? 'Yape, Plin y todas las tarjetas' : 'Tarjetas internacionales y PayPal'}
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Entrega instantánea a tu email
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 font-medium">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Garantía de 7 días
+                  </span>
+                </div>
+
+                {/* Enlaces directos verificados */}
+                <div className="mt-8 pt-4 border-t border-slate-100 w-full max-w-md">
+                  <details className="text-left text-xs text-slate-400">
+                    <summary className="cursor-pointer hover:text-slate-600 font-medium">
+                      🔗 Enlaces oficiales de Hotmart activos
+                    </summary>
+                    <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2 text-[11px] font-mono text-slate-600">
+                      <div>
+                        <strong className="text-slate-800">Kit Básico:</strong><br />
+                        <span className="text-indigo-600 break-all">{pricing.basico.checkoutUrl}</span>
+                      </div>
+                      <div>
+                        <strong className="text-slate-800">Kit Pro:</strong><br />
+                        <span className="text-indigo-600 break-all">{pricing.pro.checkoutUrl}</span>
+                      </div>
+                      <div>
+                        <strong className="text-slate-800">Mega Combo (10% OFF):</strong><br />
+                        <span className="text-emerald-600 break-all">{pricing.combo.checkoutUrl}</span>
+                      </div>
+                    </div>
+                  </details>
+                </div>
+
+              </div>
+
+            </div>
+          </section>
+
+          {/* TABLA COMPARATIVA DETALLADA */}
+          <section className="w-full max-w-4xl px-4 py-16">
+            <div className="text-center mb-10">
+              <span className="text-indigo-600 font-semibold text-xs sm:text-sm tracking-wider uppercase">Comparativa de Contenido</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">¿Qué incluye exactamente cada paquete?</h2>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold">
+                      <th className="p-4 sm:p-5">Características y Recursos</th>
+                      <th className="p-4 text-center">Kit Básico (S/ 29)</th>
+                      <th className="p-4 text-center">Kit Pro (S/ 60)</th>
+                      <th className="p-4 text-center bg-indigo-50/50 text-indigo-900 font-black">Combo (S/ 80.10)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-slate-700">
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">65 Prompts Clínicos Asistenciales para ChatGPT/Claude</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">Plantillas de Folletos de Alta en Lenguaje Claro</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">Protocolo Anti-Alucinaciones y Anonimización HIPAA/RGPD</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">15 Sistemas de Creación y Estructuración de Minicursos</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center text-purple-600 font-bold">✓</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">Guiones para Infoproductos y Protocolos de Bolsillo</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center text-purple-600 font-bold">✓</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">Descuento Especial del 10% Adicional sobre precio preventa</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center text-slate-300">✕</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓ (Ahorras S/ 8.90)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-4 sm:p-5 font-medium">Garantía Incondicional de Devolución por 7 Días</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center text-emerald-600 font-bold">✓</td>
+                      <td className="p-4 text-center bg-indigo-50/30 text-emerald-600 font-bold">✓</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* CALCULADORA DE RETORNO (KIT PRO) */}
+          <section className="w-full bg-white py-14 border-y border-slate-200 px-4 flex justify-center">
+            <div className="w-full max-w-3xl text-center">
+              <div className="inline-flex p-2 bg-indigo-50 rounded-xl text-indigo-600 mb-3">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                ¿Cuánto tiempo tarda en pagarse tu inversión?
+              </h2>
+              <p className="text-slate-600 text-sm max-w-xl mx-auto mt-2">
+                Con el <strong>Kit Pro Creadora</strong> ({curPrices.symbol} {pricing.pro.precioActual.toFixed(currency === 'PEN' ? 0 : 2)}) o el <strong>Combo</strong> ({curPrices.symbol} {pricing.combo.precioActual.toFixed(2)}), aprenderás a empaquetar tu conocimiento clínico en guías o protocolos digitales.
+              </p>
+
+              <div className="mt-8 p-6 bg-slate-50 rounded-2xl border border-slate-200 text-left">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <div className="text-xs text-slate-500 font-medium">Si creas 1 Guía digital a:</div>
+                    <div className="text-2xl font-black text-slate-800 mt-1">{curPrices.symbol} {currency === 'PEN' ? '25' : '7'}</div>
+                    <div className="text-[11px] text-slate-400 mt-1">Precio accesible para colegas</div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <div className="text-xs text-slate-500 font-medium">Solo necesitas vender:</div>
+                    <div className="text-2xl font-black text-indigo-600 mt-1">4 descargas</div>
+                    <div className="text-[11px] text-slate-400 mt-1">A través de tus redes o WhatsApp</div>
+                  </div>
+
+                  <div className="p-4 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <div className="text-xs text-slate-500 font-medium">Tu Retorno Total:</div>
+                    <div className="text-2xl font-black text-emerald-600 mt-1">{curPrices.symbol} {currency === 'PEN' ? '100' : '28'}</div>
+                    <div className="text-[11px] text-emerald-600 font-semibold mt-1">¡Recuperas el 100% y ganas!</div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-500 text-center mt-4">
+                  *Tu experiencia vale dinero. Este kit te entrega las herramientas exactas para dejar de regalar tu tiempo en consultas informales.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* GARANTÍA INCONDICIONAL DE 7 DÍAS */}
+          <section className="w-full max-w-4xl px-4 py-14">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 sm:p-10 shadow-md flex flex-col md:flex-row items-center gap-6 sm:gap-8">
+              <div className="shrink-0 p-4 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl text-emerald-400">
+                <ShieldCheck className="w-16 h-16" />
+              </div>
+              <div className="text-left">
+                <span className="text-emerald-400 font-bold text-xs uppercase tracking-wider">Cero Riesgo Para Ti</span>
+                <h3 className="text-xl sm:text-2xl font-black mt-1">Garantía Incondicional de Satisfacción de 7 Días</h3>
+                <p className="text-slate-300 text-xs sm:text-sm mt-2 leading-relaxed">
+                  Ingresa a Hotmart, descarga los 65 prompts y los 15 sistemas de creación. Pruébalos en tus guardias, clases o proyectos. Si por cualquier motivo sientes que este material no te ahorra semanas de trabajo o no cumple con el más alto rigor clínico, solicitas el reembolso directo en Hotmart y se te devuelve el 100% de tu dinero. Sin trámites engorrosos ni preguntas.
+                </p>
+                <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span>Protección respaldada por las políticas oficiales del consumidor de Hotmart.</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* PREGUNTAS FRECUENTES (FAQS) */}
+          <section className="w-full max-w-3xl px-4 py-12">
+            <div className="text-center mb-8">
+              <span className="text-indigo-600 font-semibold text-xs sm:text-sm tracking-wider uppercase">Respuestas Claras</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mt-1">Preguntas Frecuentes</h2>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, index) => {
+                const isOpen = activeFaq === index;
+                return (
+                  <div 
+                    key={index}
+                    className="border border-slate-200 bg-white rounded-xl overflow-hidden transition-all duration-200 shadow-sm"
+                  >
+                    <button
+                      onClick={() => setActiveFaq(isOpen ? null : index)}
+                      className="w-full p-4 sm:p-5 text-left font-bold text-sm sm:text-base text-slate-800 flex items-center justify-between gap-3 hover:bg-slate-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <HelpCircle className="w-4 h-4 text-indigo-500 shrink-0" />
+                        {faq.q}
+                      </span>
+                      <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-indigo-600' : ''}`} />
+                    </button>
+                    {isOpen && (
+                      <div className="p-4 sm:p-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/50">
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* CTA FINAL CON RECORDATORIO DEL COMBO */}
+          <section className="w-full bg-indigo-900 text-white py-14 px-4 text-center flex flex-col items-center">
+            <div className="max-w-2xl">
+              <h2 className="text-2xl sm:text-4xl font-black">
+                Comienza Hoy a Liderar en Salud con Inteligencia Artificial
+              </h2>
+              <p className="mt-3 text-indigo-200 text-sm sm:text-base">
+                No permitas que la tecnología sea una fuente de incertidumbre. Conviértela en tu mejor aliada para sanar, educar y prosperar.
+              </p>
+
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href={pricing.combo.checkoutUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-base rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span>Asegurar mi Acceso al Combo ({curPrices.symbol} {pricing.combo.precioActual.toFixed(2)})</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+              <p className="text-xs text-indigo-300 mt-4">
+                {currency === 'PEN' ? 'Aceptamos Yape, Plin y todas las tarjetas a través de Hotmart.' : 'Pagos seguros procesados en dólares mediante Hotmart.'}
+              </p>
+            </div>
+          </section>
+
+          {/* TOAST FLOTANTE DE PRUEBA SOCIAL EN VIVO */}
+          {socialToast && isToastVisible && (
+            <div className="fixed bottom-4 left-4 z-50 max-w-xs sm:max-w-sm bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xl flex items-center gap-3 transition-all duration-300 animate-bounce-once">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-200">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="text-left flex-1 min-w-0">
+                <div className="text-xs font-bold text-slate-800 truncate">
+                  {socialToast.name} <span className="text-[10px] font-normal text-slate-400">({socialToast.city})</span>
+                </div>
+                <div className="text-[11px] text-emerald-700 font-semibold truncate">
+                  Compró: {socialToast.plan}
+                </div>
+                <div className="text-[10px] text-slate-400">
+                  {socialToast.time} • Verificado por Hotmart
+                </div>
+              </div>
+              <button
+                onClick={() => setIsToastVisible(false)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                title="Cerrar notificación"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {/* FOOTER */}
+          <footer className="w-full bg-slate-900 text-slate-500 py-8 px-4 text-center text-xs border-t border-slate-800">
+            <p>© {new Date().getFullYear()} Prompts para Enfermeras IA. Todos los derechos reservados.</p>
+            <p className="mt-2 text-slate-600 max-w-xl mx-auto">
+              Descargo de responsabilidad: Este producto digital está diseñado con propósitos educativos y de asistencia operativa. Las herramientas de inteligencia artificial son un copiloto técnico y bajo ninguna circunstancia reemplazan el juicio clínico, diagnóstico médico o peritaje individual del profesional sanitario colegiado.
+            </p>
+          </footer>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
