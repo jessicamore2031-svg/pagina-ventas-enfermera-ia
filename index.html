@@ -268,28 +268,39 @@
       };
 
       const samplePrompts = {
-        apc: {
+       apc: {
           titulo: 'Asistente de Planes de Cuidado (APC) en Acción',
           contexto: 'Exclusivo del Mega Pack: Interacción real dentro de Hotmart Club.',
           promptText: `[ENTRADA DEL ENFERMERO]:
 Paciente femenina de 72 años, postoperatorio mediato de reemplazo total de cadera derecha. Refiere dolor agudo en herida quirúrgica EVA 8/10, náuseas leves tras analgesia y temor a movilizarse en cama.
 
-[RESPUESTA INMEDIATA DEL ASISTENTE APC]:
-1. RESUMEN DE VALORACIÓN: Dolor agudo postquirúrgico y riesgo de luxación protésica por inmovilidad.
-2. DIAGNÓSTICO NANDA-I: [00132] Dolor agudo r/c intervención quirúrgica m/p expresión verbal (EVA 8/10), diaforesis y postura antiálgica.
-3. CRITERIO NOC: [1605] Control del dolor (Meta: EVA ≤ 3/10 en 45 min).
-4. INTERVENCIONES NIC:
-   - [2210] Administración de analgésicos según pauta médica y evaluación de tolerancia gástrica.
-   - [0840] Cambio de posición asistido con cojín abductor, manteniendo alineación anatómica estricta.
-   - [6680] Monitorización de constantes vitales post-administración.
-5. NOTA CLÍNICA SOAPIE:
-   - S: Paciente refiere: "Siento un dolor punzante en la cadera (8/10) y tengo miedo de moverme".
-   - O: Consciente, quejumbrosa, signos vitales estables, vendaje quirúrgico seco e intacto.
-   - A: Dolor agudo postoperatorio traumatológico.
-   - P: Disminución del dolor a escala tolerable y fomento de movilización segura.
-   - I: Se administra analgesia prescrita, se coloca cojín abductor entre extremidades inferiores.
-   - E: Paciente refiere disminución del dolor a EVA 3/10 tras 40 min; reposa tranquila.`,
-          salidaClave: 'Estructuración profesional instantánea con NANDA, NOC, NIC y SOAPIE.'
+[RESPUESTA MODELO DEL ASISTENTE APC]:
+1. RESUMEN DE VALORACIÓN CLÍNICA:
+   - Problemas identificados: Dolor agudo severo (EVA 8/10), efecto adverso farmacológico leve (náuseas) y respuesta emocional limitante (temor al movimiento).
+   - Datos pendientes de verificar: Tipo de abordaje quirúrgico (precauciones de luxación específicas), vía y principio activo de la analgesia previa administrada, y constantes vitales actuales.
+
+2. DIAGNÓSTICOS DE ENFERMERÍA (NANDA-I 2024–2026):
+   - [00132] Dolor agudo r/c intervención quirúrgica m/p manifestación verbal (EVA 8/10).
+   - [00134] Náuseas r/c régimen terapéutico / analgesia m/p reporte verbal de náuseas leves.
+   - [00148] Temor r/c proceso de recuperación y miedo al dolor al movimiento m/p conducta aprehensiva y resistencia a movilizarse.
+
+3. CRITERIOS DE RESULTADO (NOC):
+   - [1605] Control del dolor: Meta referida reducción a EVA ≤ 3/10 tras ajuste terapéutico.
+   - [2107] Severidad de las náuseas: Control o resolución del malestar emético.
+
+4. INTERVENCIONES Y ACTIVIDADES PRIORITARIAS (NIC):
+   - [2210] Administración de analgésicos: Notificar tolerancia oral/efecto adverso (náuseas) al prescriptor para valorar coadyuvante antiemético o ajuste de molécula analgésica.
+   - [0840] Cambio de posición / Movilización asistida: Verificar protocolo traumatológico específico según abordaje; educar al paciente sobre movimientos seguros para reducir el temor; mantener cojín abductor según indicación.
+   - [6680] Monitorización de signos vitales: Control basal previo y posterior a la administración de nuevos fármacos.
+
+5. NOTA CLÍNICA MODELO (SOAPIE):
+   - S: Paciente refiere: "Tengo un dolor muy fuerte en la cadera (8/10), siento algo de náuseas desde el medicamento anterior y me da mucho miedo moverme".
+   - O: Lúcida, orientada. Constantes vitales y estado del apósito: [Pendientes de registro al momento del turno]. Abordaje quirúrgico a corroborar en hoja operatoria.
+   - A: Dolor agudo severo postquirúrgico + náuseas secundarias a farmacoterapia + temor a movilización.
+   - P: Disminución del dolor, control de náuseas y prevención de luxación protésica con movilización segura.
+   - I: Notificación al médico de náuseas para ajuste de analgesia/antiemético. Explicación calmada a la paciente sobre cuidados posturales y colocación de apoyo abductor según protocolo.
+   - E: Pendiente de reevaluación del dolor (EVA) y tolerancia tras administración de la nueva indicación médica.`,
+          salidaClave: 'Estructuración profesional instantánea con NANDA, NOC, NIC y SOAPIE sin inventar datos.'
         },
         alta: {
           titulo: 'Folleto de Alta sin Jerga (Health Literacy)',
